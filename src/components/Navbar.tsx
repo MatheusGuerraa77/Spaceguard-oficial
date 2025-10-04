@@ -7,6 +7,7 @@ function cn(...classes: Array<string | false | null | undefined>) {
 }
 
 const routes = [
+  { to: "/asteroids", label: "Asteroides" }, // << NOVO
   { to: "/scenario", label: "Cenário" },
   { to: "/mitigation", label: "Mitigação" },
   { to: "/about", label: "Sobre" },
@@ -21,13 +22,13 @@ export default function Navbar() {
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <img
-              src="/Logo-DualTech-_1_.ico"
-              alt="SpaceGuard"
-              className="h-10 w-10 object-contain"
-            />
-            <span className="text-xl font-bold tracking-tight">SpaceGuard</span>
-          </Link>
+          <img
+            src="/Logo-DualTech-_1_.ico"
+            alt="SpaceGuard"
+            className="h-10 w-10 object-contain"
+          />
+          <span className="text-xl font-bold tracking-tight">SpaceGuard</span>
+        </Link>
 
         {/* Nav (desktop) */}
         <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Navegação principal">
