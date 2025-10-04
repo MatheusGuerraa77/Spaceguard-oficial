@@ -3,12 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-
-// 👇 novo: provider do sistema gamificado
 import { GameProvider } from "@/game/GameContext";
 
 import Home from "./pages/Home";
@@ -16,32 +14,40 @@ import Scenario from "./pages/Scenario";
 import Mitigation from "./pages/Mitigation";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
+// (opcional) rola pro topo ao trocar de rota
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [pathname]);
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    {/* O GameProvider pode ficar aqui, envolvendo todo o app */}
     <GameProvider>
       <TooltipProvider>
+        {/* Toasts globais */}
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/scenario" element={<Scenario />} />
-                <Route path="/mitigation" element={<Mitigation />} />
-                <Route path="/about" element={<About />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </BrowserRouter>
+
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/scenario" element={<Scenario />} />
+              <Route path="/mitigation" element={<Mitigation />} />
+              <Route path="/about" element={<About />} />
+              {/* catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
       </TooltipProvider>
     </GameProvider>
   </QueryClientProvider>
