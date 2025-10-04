@@ -19,9 +19,9 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.16",
-    "@types/node": "^20.11.30",
+    "@types/node": "^20.19.19",
     "@types/pg": "^8.15.5",
-    "tsx": "^4.15.7",
-    "typescript": "^5.5.4"
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }

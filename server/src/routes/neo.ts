@@ -11,6 +11,7 @@ r.get("/feed", async (req, res) => {
     const data = await getNeoFeed(start, end);
     res.json({ ok: true, data });
   } catch (e: any) {
+    console.error("GET /api/neo/feed error:", e);
     res.status(e?.status || 500).json({ ok: false, error: e.message || "Erro no feed" });
   }
 });
@@ -22,6 +23,7 @@ r.get("/browse", async (req, res) => {
     const data = await getNeoBrowse(page, size);
     res.json({ ok: true, data });
   } catch (e: any) {
+    console.error("GET /api/neo/browse error:", e);
     res.status(e?.status || 500).json({ ok: false, error: e.message || "Erro no browse" });
   }
 });
@@ -31,6 +33,7 @@ r.get("/lookup/:id", async (req, res) => {
     const data = await getNEO(req.params.id);
     res.json({ ok: true, data });
   } catch (e: any) {
+    console.error("GET /api/neo/lookup/:id error:", e);
     res.status(e?.status || 500).json({ ok: false, error: e.message || "Erro no lookup" });
   }
 });
@@ -41,6 +44,7 @@ r.get("/search", async (req, res) => {
     const data = await searchNEO(q);
     res.json({ ok: true, data });
   } catch (e: any) {
+    console.error("GET /api/neo/search error:", e);
     res.status(e?.status || 500).json({ ok: false, error: e.message || "Erro na busca" });
   }
 });

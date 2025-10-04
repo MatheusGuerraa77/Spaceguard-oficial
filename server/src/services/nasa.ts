@@ -64,47 +64,62 @@ function normalize(s: string) {
 // 🔎 Busca no /neo/browse com paginação, depois filtra no servidor
 export async function searchNEO(query: string) {
   const q = normalize(query);
-  const pageLimit = 10; // ~1000 objetos
+  if (!q) return [];
+
+  // Menos agressivo para evitar 403/429 com DEMO_KEY
+  const pageLimit = 3;   // antes 10
   const size = 100;
 
-  const found: any[] = [];
+  const results: any[] = [];
+
   for (let page = 0; page < pageLimit; page++) {
     const resp = await axios.get(`${NASA_API}/neo/browse`, {
       params: { api_key: apiKey(), size, page },
       timeout: 15000,
       validateStatus: () => true,
     });
-    assertOk(resp);
 
-    const data = resp.data;
-    const chunk: any[] = data?.near_earth_objects ?? [];
-    found.push(
-      ...chunk.filter((n) => {
-        const name = normalize(n.name);
-        const des = normalize(n.designation);
-        const id = String(n.neo_reference_id || n.id || "").toLowerCase();
-        return name.includes(q) || des.includes(q) || id.includes(q);
-      })
-    );
+    // Se não veio 2xx, lança já com a msg da NASA:
+    try {
+      assertOk(resp);
+    } catch (e: any) {
+      // Enriquecer a mensagem em casos comuns
+      if (resp.status === 403 || resp.status === 429) {
+        e.message =
+          resp.data?.error_message ||
+          "Rate limit/forbidden da NASA. Use uma NASA_API_KEY válida ou tente novamente em instantes.";
+      }
+      throw e;
+    }
 
-    // encerra se acabaram as páginas
-    const totalPages: number = data?.page?.total_pages ?? pageLimit;
+    const chunk = resp.data?.near_earth_objects ?? [];
+    for (const n of chunk) {
+      const name = normalize(n.name);
+      const des  = normalize(n.designation);
+      const id   = String(n.neo_reference_id || n.id || "").toLowerCase();
+      if (name.includes(q) || des.includes(q) || id.includes(q)) {
+        results.push(n);
+      }
+    }
+
+    const totalPages: number = resp.data?.page?.total_pages ?? pageLimit;
     if (page >= totalPages - 1) break;
-
-    // proteção leve contra rate limit
-    if (found.length >= 200) break;
+    if (results.length >= 200) break; // proteção leve
   }
 
-  return found.slice(0, 12).map((n) => ({
+  // Mapeia só o essencial para o front
+  return results.slice(0, 12).map((n) => ({
     id: n.id,
     neo_reference_id: n.neo_reference_id,
     name: n.name,
     designation: n.designation,
-    est_diameter_m: meanDiameterMeters(n),
+    estimated_diameter_m: meanDiameterMeters(n),
     absolute_magnitude_h: n.absolute_magnitude_h,
     is_potentially_hazardous_asteroid: n.is_potentially_hazardous_asteroid,
   }));
 }
+
+
 
 // 📄 Detalhe por ID
 export async function getNEO(id: string) {

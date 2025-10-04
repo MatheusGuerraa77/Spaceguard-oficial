@@ -1,3 +1,4 @@
+// src/features/map/MapView.tsx
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,42 +14,42 @@ interface MapViewProps {
 export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showComparison }: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<L.LayerGroup | null>(null);
 
+  // init map once
   useEffect(() => {
-    if (!mapContainerRef.current) return;
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    // Initialize map only once
-    if (!mapRef.current) {
-      mapRef.current = L.map(mapContainerRef.current, {
-        center: impactPoint,
-        zoom: 8,
-        zoomControl: true,
-      });
-
-      // Add tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18,
-      }).addTo(mapRef.current);
-
-      // Map click handler
-      if (onMapClick) {
-        mapRef.current.on('click', (e: L.LeafletMouseEvent) => {
-          onMapClick(e.latlng.lat, e.latlng.lng);
-        });
-      }
-    }
-
-    const map = mapRef.current;
-
-    // Clear previous layers (markers and zones)
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Circle) {
-        map.removeLayer(layer);
-      }
+    const map = L.map(mapContainerRef.current, {
+      center: impactPoint,
+      zoom: 8,
+      zoomControl: true,
     });
+    mapRef.current = map;
 
-    // Add impact point marker
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    overlayRef.current = L.layerGroup().addTo(map);
+
+    if (onMapClick) {
+      map.on('click', (e: L.LeafletMouseEvent) => {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      });
+    }
+  }, [impactPoint, onMapClick]);
+
+  // update overlays
+  useEffect(() => {
+    const map = mapRef.current;
+    const overlay = overlayRef.current;
+    if (!map || !overlay) return;
+
+    overlay.clearLayers();
+
+    // Impact marker
     const impactIcon = L.divIcon({
       className: 'custom-marker',
       html: `<div style="
@@ -64,10 +65,10 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
     });
 
     L.marker(impactPoint, { icon: impactIcon })
-      .addTo(map)
+      .addTo(overlay)
       .bindPopup('<strong>Ponto de Impacto Original</strong>');
 
-    // Add mitigated point if comparison mode
+    // mitigated + line
     if (showComparison && mitigatedPoint) {
       const mitigatedIcon = L.divIcon({
         className: 'custom-marker',
@@ -84,52 +85,35 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
       });
 
       L.marker(mitigatedPoint, { icon: mitigatedIcon })
-        .addTo(map)
+        .addTo(overlay)
         .bindPopup('<strong>Ponto Após Mitigação</strong>');
 
-      // Draw line between points
       L.polyline([impactPoint, mitigatedPoint], {
         color: '#22C55E',
         weight: 2,
         dashArray: '5, 10',
-      }).addTo(map);
+      }).addTo(overlay);
     }
 
-    // Add zones if provided
-    if (zones && zones.features) {
+    // zones
+    if (zones?.features?.length) {
       zones.features.forEach((feature: any) => {
         const { radius_km, color, name, description } = feature.properties;
-        const coords = feature.geometry.coordinates;
-
+        const coords = feature.geometry.coordinates; // [lon, lat]
         L.circle([coords[1], coords[0]], {
-          radius: radius_km * 1000, // convert km to meters
-          color: color,
+          radius: radius_km * 1000,
+          color,
           fillColor: color,
           fillOpacity: 0.15,
           weight: 2,
         })
-          .addTo(map)
+          .addTo(overlay)
           .bindPopup(`<strong>${name}</strong><br/>${description}`);
       });
     }
 
-    // Center map on impact point
     map.setView(impactPoint, showComparison ? 7 : 8);
+  }, [impactPoint, mitigatedPoint, zones, showComparison]);
 
-    return () => {
-      // Cleanup on unmount
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [impactPoint, mitigatedPoint, zones, onMapClick, showComparison]);
-
-  return (
-    <div 
-      ref={mapContainerRef} 
-      className="w-full h-full rounded-lg"
-      data-testid="map-view"
-    />
-  );
+  return <div ref={mapContainerRef} className="w-full h-full rounded-lg" data-testid="map-view" />;
 }

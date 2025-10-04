@@ -2,11 +2,12 @@ import { UseFormReturn } from 'react-hook-form';
 import { SimulationRequest } from '@/types/dto';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Rocket } from 'lucide-react';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import AsteroidPicker from './AsteroidPicker';
+import type { NEOSearchItem } from '@/types/dto';
 
 interface ScenarioFormProps {
   form: UseFormReturn<SimulationRequest>;
@@ -15,6 +16,18 @@ interface ScenarioFormProps {
 }
 
 export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
+  const handlePick = (neo: NEOSearchItem) => {
+    // Preenche o form com o que temos (diâmetro médio em metros, se vier)
+    if (typeof neo.estimated_diameter_m === 'number') {
+      form.setValue('diameter_m', Math.round(neo.estimated_diameter_m));
+    }
+    // Você pode decidir regras para lat/lon a partir do usuário/mapa; não há lat/lon na resposta do browse
+    // Mantemos os demais campos como estão.
+
+    // feedback visual simples (opcional)
+    // toast.success(`Selecionado: ${neo.name}`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -29,8 +42,11 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
         </div>
       </CardHeader>
       <CardContent>
+        {/* 🔭 Picker NASA */}
+        <AsteroidPicker onPick={handlePick} />
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
             {/* Diameter */}
             <FormField
               control={form.control}
