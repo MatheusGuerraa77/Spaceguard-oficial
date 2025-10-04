@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,11 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between gap-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <Shield className="h-7 w-7 text-primary" />
+            <img
+              src="/Logo-DualTech-_1_.ico"
+              alt="SpaceGuard"
+              className="h-10 w-10 object-contain"
+            />
             <span className="text-xl font-bold tracking-tight">SpaceGuard</span>
           </Link>
 
