@@ -1,55 +1,65 @@
-import { Link } from 'react-router-dom';
-import { ChevronDown, Search } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+// src/components/Navbar.tsx
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { useMemo } from "react";
 
-export function Navbar() {
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+const routes = [
+  { to: "/scenario", label: "Cenário" },
+  { to: "/mitigation", label: "Mitigação" },
+  { to: "/about", label: "Sobre" },
+];
+
+export default function Navbar() {
+  const location = useLocation();
+  const activePath = useMemo(() => location.pathname, [location.pathname]);
+
   return (
-    <motion.nav
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4, delay: 0.1 }}
-      className="nasa-panel border-b sticky top-0 z-40 backdrop-blur-sm bg-card/95"
-    >
-      <div className="container mx-auto px-4 md:px-8">
-        <div className="flex h-16 items-center justify-between gap-8">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-            <img
-              src="/Logo-DualTech-_1_.ico"
-              alt="SpaceGuard"
-              className="h-10 w-10 object-contain"
-            />
-            <span className="text-xl font-bold tracking-tight">SpaceGuard</span>
-          </Link>
+    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#0b1321]/80 backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
+        {/* Brand */}
+        <Link to="/" className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-orange-600/90 text-white font-bold">
+            ⛨
+          </span>
+          <span className="text-white font-semibold">SpaceGuard</span>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6 flex-1 justify-center">
-            <Link to="/scenario" className="text-sm font-medium transition-colors hover:text-primary focus-visible-ring">
-              Cenário
-            </Link>
-            <Link to="/mitigation" className="text-sm font-medium transition-colors hover:text-primary focus-visible-ring">
-              Mitigação
-            </Link>
-            <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary focus-visible-ring">
-              Sobre
-            </Link>
-          </div>
+        {/* Nav */}
+        <nav className="ml-6 hidden items-center gap-1 md:flex">
+          {routes.map((r) => (
+            <NavLink
+              key={r.to}
+              to={r.to}
+              className={cn(
+                "rounded-md px-3 py-2 text-sm transition-colors",
+                activePath.startsWith(r.to)
+                  ? "text-white bg-white/10"
+                  : "text-white/70 hover:text-white hover:bg-white/5"
+              )}
+            >
+              {r.label}
+            </NavLink>
+          ))}
+        </nav>
 
-          {/* Search Bar */}
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search..."
-                className="pl-9 w-48 bg-input border-border text-sm focus-visible-ring"
-              />
-            </div>
-          </div>
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Search (estático por enquanto; pode ligar depois) */}
+        <div className="relative hidden md:block">
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-56 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-white/20"
+          />
+          <kbd className="absolute right-2 top-1/2 -translate-y-1/2 select-none rounded border border-white/10 bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
+            /
+          </kbd>
         </div>
       </div>
-    </motion.nav>
+    </header>
   );
 }
