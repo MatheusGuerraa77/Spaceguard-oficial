@@ -42,6 +42,13 @@ export function Navbar() {
             >
               Mitigação
             </Link>
+            {/* Novo: Asteroides */}
+            <Link
+              to="/asteroids"
+              className={`${linkBase} ${pathname === "/asteroids" ? active : ""}`}
+            >
+              Asteroides
+            </Link>
             <Link
               to="/about"
               className={`${linkBase} ${pathname === "/about" ? active : ""}`}

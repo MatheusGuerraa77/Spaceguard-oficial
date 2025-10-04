@@ -1,4 +1,5 @@
 // src/App.tsx
+import AsteroidSearch from "@/pages/AsteroidSearch";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,9 +9,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
-// 👇 novo: provider do sistema gamificado
+// Provider do sistema gamificado
 import { GameProvider } from "@/game/GameContext";
 
+// Páginas
 import Home from "./pages/Home";
 import Scenario from "./pages/Scenario";
 import Mitigation from "./pages/Mitigation";
@@ -21,7 +23,6 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    {/* O GameProvider pode ficar aqui, envolvendo todo o app */}
     <GameProvider>
       <TooltipProvider>
         <Toaster />
@@ -35,7 +36,11 @@ const App = () => (
                 <Route path="/scenario" element={<Scenario />} />
                 <Route path="/mitigation" element={<Mitigation />} />
                 <Route path="/about" element={<About />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+                {/* NOVA ROTA: página de pesquisa de asteroides (design-only) */}
+                <Route path="/asteroids" element={<AsteroidSearch />} />
+
+                {/* Catch-all */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
