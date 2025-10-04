@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* NASA SpaceGuard Theme - Black Hero Dominant */
+    --background: 0 0% 0%; /* #000000 hero black */
+    --background-alt: 0 0% 4%; /* #0B0B0D panel dark */
+    --foreground: 0 0% 100%; /* #FFFFFF white text */
+
+    --card: 0 0% 4%; /* #0B0B0D panel dark */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 11 93% 56%; /* NASA Red #FC3D21 for CTAs */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 91% 31%; /* NASA Blue #0B3D91 */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 215 14% 12%; /* Dark muted bg */
+    --muted-foreground: 215 9% 80%; /* #C7CBD1 muted text */
+
+    --accent: 217 91% 70%; /* #7AA2FF soft blue accent */
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 4 90% 58%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 215 25% 15%; /* #1E293B subtle borders */
+    --input: 0 0% 4%;
+    --ring: 0 0% 100% / 0.25; /* rgba(255,255,255,.25) */
+
+    --radius: 1rem;
+
+    /* SpaceGuard semantic tokens */
+    --nasa-blue: 217 91% 31%; /* #0B3D91 */
+    --nasa-red: 11 93% 56%; /* #FC3D21 */
+    --nasa-red-700: 11 85% 48%; /* #D8341D */
+    --hero-black: 0 0% 0%; /* #000000 */
+    --panel-dark: 0 0% 4%; /* #0B0B0D */
+    --ink: 0 0% 100%; /* #FFFFFF */
+    --muted-text: 215 9% 80%; /* #C7CBD1 */
+    --ok: 142 71% 45%; /* #22C55E */
+    --warn: 38 92% 50%; /* #F59E0B */
+    --err: 4 90% 58%; /* #EF4444 */
+
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 11 93% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 14% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 25% 15%;
+    --sidebar-ring: 0 0% 100% / 0.25;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-foreground;
+    background: hsl(var(--hero-black));
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-size: 16px;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  /* Leaflet CSS required imports */
+  .leaflet-container {
+    background: hsl(var(--panel-dark));
+    font-family: inherit;
+    border-radius: 1rem;
+  }
+}
+
+@layer utilities {
+  .text-gradient-nasa {
+    @apply bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/30;
+  }
+
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  .bg-panel {
+    @apply bg-card border border-border shadow-lg rounded-2xl;
+  }
+
+  .text-link {
+    @apply text-accent hover:underline transition-colors;
+  }
+
+  .nasa-topbar {
+    @apply bg-[hsl(var(--nasa-blue))] text-white;
+  }
+
+  .nasa-hero {
+    @apply bg-[hsl(var(--hero-black))] text-[hsl(var(--ink))];
+  }
+
+  .nasa-panel {
+    @apply bg-[hsl(var(--panel-dark))] border-[hsl(var(--border))];
+  }
+}
