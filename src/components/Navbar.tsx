@@ -20,14 +20,14 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#0b1321]/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4">
         {/* Brand */}
-        <Link to="/" className="group flex items-center gap-2" aria-label="Ir para a página inicial">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-orange-600/90 text-white font-bold">
-            ⛨
-          </span>
-          <span className="text-white font-semibold group-hover:opacity-90 transition-opacity">
-            SpaceGuard
-          </span>
-        </Link>
+        <Link to="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+            <img
+              src="/Logo-DualTech-_1_.ico"
+              alt="SpaceGuard"
+              className="h-10 w-10 object-contain"
+            />
+            <span className="text-xl font-bold tracking-tight">SpaceGuard</span>
+          </Link>
 
         {/* Nav (desktop) */}
         <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Navegação principal">
