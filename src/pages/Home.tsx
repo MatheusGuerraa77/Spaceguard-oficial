@@ -72,7 +72,7 @@ export default function Home() {
                   >
                     <Link to="/scenario">
                       <Radar className="mr-2 h-5 w-5" />
-                      Defender a Terra
+                      Explorar Cenários
                     </Link>
                   </Button>
                 </motion.div>
@@ -86,7 +86,7 @@ export default function Home() {
                   >
                     <Link to="/mitigation">
                       <Zap className="mr-2 h-5 w-5" />
-                      Explorar Cenários
+                      Defender a Terra
                     </Link>
                   </Button>
                 </motion.div>
