@@ -10,6 +10,7 @@ import {
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +19,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import { Shield, Radar, Zap, Info } from "lucide-react";
 
 /* ===========================
@@ -85,7 +95,7 @@ export default function Home() {
 
       {/* ============================= HERO ============================= */}
       <motion.section
-        className="relative min-h-[88vh] flex items-center" // <-- sem overflow-hidden
+        className="relative min-h-[88vh] flex items-center"
         style={{ opacity: heroOpacity }}
       >
         {/* Conteúdo do herói em 2 colunas no lg, empilha no mobile */}
@@ -166,20 +176,17 @@ export default function Home() {
               className="relative rounded-2xl overflow-hidden"
               style={{
                 width: `min(90vw, ${earthMax}px)`,
-                aspectRatio: 1, // quadrado – mantém a Terra inteira
+                aspectRatio: 1,
               }}
             >
               <div className="absolute inset-0">
-                <Suspense
-                  fallback={<div className="w-full h-full bg-black/50" />}
-                >
+                <Suspense fallback={<div className="w-full h-full bg-black/50" />}>
                   <OrbitScene
                     speed={1}
                     accent="#0B3D91"
                     asteroidCount={24}
-                    highlights={0} // sem labels/linhas nos asteroides
+                    highlights={0}
                     onSelect={(info) => {
-                      // mantém o clique alimentando o HUD
                       setHudSpeed(info.speedKms);
                       setHudAlt(info.altitudeKm);
                     }}
@@ -231,9 +238,92 @@ export default function Home() {
           <Card className="max-w-4xl mx-auto nasa-panel">
             <CardHeader>
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <Info className="h-6 w-6 text-primary" />
-                </div>
+                {/* Ícone + POPUP (Dialog) */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button
+                      className="p-3 rounded-xl bg-primary/10 hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                      aria-label="Saiba mais sobre o Impactor-2025"
+                    >
+                      <Info className="h-6 w-6 text-primary" />
+                    </button>
+                  </DialogTrigger>
+
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Impactor-2025 — Sobre o cenário</DialogTitle>
+                      <DialogDescription>
+                        Contexto do desafio e como os dados são usados na plataforma.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 text-sm text-muted-foreground">
+                      <p>
+                        O cenário “Impactor-2025” é uma <strong>demonstração</strong> que
+                        integra dados da <strong>NASA NeoWs</strong> (características de
+                        NEOs) e do <strong>USGS</strong> (contexto geológico/ambiental)
+                        para simular impactos, estimar energia, crateras e efeitos
+                        (sísmicos/tsunami) de maneira educativa.
+                      </p>
+
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>
+                          <strong>Entrada do usuário:</strong> diâmetro, densidade,
+                          velocidade, ângulo e localização do impacto (ou carregue um NEO
+                          real via busca).
+                        </li>
+                        <li>
+                          <strong>Modelo físico simplificado:</strong> converte massa e
+                          velocidade em energia (Mt TNT), estima tamanho de cratera e
+                          magnitude sísmica equivalente.
+                        </li>
+                        <li>
+                          <strong>Camadas do USGS:</strong> ajudam a contextualizar riscos
+                          (elevação/zonas costeiras, atividade sísmica histórica) nas
+                          visualizações.
+                        </li>
+                        <li>
+                          <strong>Mitigação:</strong> teste deflexões com ∆v e visualize o
+                          novo ponto de impacto no mapa.
+                        </li>
+                      </ul>
+
+                      <p className="text-xs">
+                        Nota: Os resultados são aproximados e destinados a fins
+                        educacionais. Para operações reais, consulte documentação técnica
+                        e missões da NASA/USGS.
+                      </p>
+
+                      <div className="text-xs">
+                        Recursos:
+                        <ul className="list-disc pl-5 mt-1 space-y-1">
+                          <li>
+                            <a
+                              href="https://api.nasa.gov/"
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline hover:no-underline"
+                            >
+                              NASA APIs (NeoWs)
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://earthquake.usgs.gov/"
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline hover:no-underline"
+                            >
+                              USGS — Earthquake Hazards / NEIC
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Título e descrição */}
                 <div>
                   <CardTitle className="text-2xl mb-2">
                     O que é o Impactor-2025?
@@ -244,6 +334,7 @@ export default function Home() {
                 </div>
               </div>
             </CardHeader>
+
             <CardContent className="space-y-4 text-muted-foreground">
               <p>
                 <strong className="text-foreground">Simulação científica:</strong>{" "}
@@ -256,12 +347,24 @@ export default function Home() {
                 diferentes cenários.
               </p>
               <p>
-                <strong className="text-foreground">
-                  Estratégias de mitigação:
-                </strong>{" "}
+                <strong className="text-foreground">Estratégias de mitigação:</strong>{" "}
                 Teste como pequenas mudanças de velocidade (∆v) desviam
                 asteroides perigosos.
               </p>
+
+              {/* Botão direto para o cenário */}
+              <div className="pt-2">
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-2xl px-6 h-11 bg-primary hover:bg-[hsl(var(--nasa-red-700))] shadow-primary/30"
+                >
+                  <Link to="/scenario">
+                    <span className="mr-2">🛰️</span>
+                    Carregar cenário Impactor-2025
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
