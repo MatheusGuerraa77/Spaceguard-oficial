@@ -1,7 +1,14 @@
 // src/features/scenario/NeoAutocomplete.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { searchNeo } from "@/services/neo";
 import type { NEOSearchItem } from "@/types/dto";
+
+// 🚀 Novo: cliente NeoWs
+import {
+  browseNeos,
+  searchNeosByText,
+  type NeoWsObject,
+  extractDiameterMeters,
+} from "@/lib/nasa";
 
 type NeoAutocompleteProps = {
   onPick: (item: NEOSearchItem) => void | Promise<void>;
@@ -12,6 +19,22 @@ type NeoAutocompleteProps = {
   className?: string;
   minChars?: number; // padrão: 2
 };
+
+// Mapeia um objeto NeoWs minimal para o seu NEOSearchItem
+function mapNeoToSearchItem(neo: NeoWsObject): NEOSearchItem {
+  // diâmetro médio em metros (se existir)
+  const diameter_m = extractDiameterMeters(neo);
+
+  return {
+    id: neo.neo_reference_id ?? neo.id,
+    name: neo.name,
+    designation: neo.designation,
+    estimated_diameter_m: diameter_m,
+    // opcional: leva o objeto bruto caso queira usar depois
+    // (adicione "raw?: any" no seu tipo se quiser tipar)
+    raw: neo as any,
+  } as NEOSearchItem;
+}
 
 export function NeoAutocomplete({
   onPick,
@@ -40,13 +63,46 @@ export function NeoAutocomplete({
     [open, loading, list.length, error]
   );
 
+  // 🔹 Sugestões iniciais (browse página 0) quando o usuário focar e não digitou ainda
+  useEffect(() => {
+    let alive = true;
+    // só carrega base quando estiver habilitado e sem texto
+    if (isDisabled || q.trim().length > 0) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const base = await browseNeos(0, 25);
+        if (!alive) return;
+        setList(base.map(mapNeoToSearchItem));
+        setActiveIdx(base.length > 0 ? 0 : -1);
+      } catch (e: any) {
+        if (!alive) return;
+        setError(e?.message || "Falha ao listar NEOs (browse)");
+        setList([]);
+        setActiveIdx(-1);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDisabled]); // roda quando habilita/desabilita
+
+  // 🔹 Busca por texto (varre algumas páginas do browse e filtra)
   useEffect(() => {
     if (isDisabled) return;
 
     // Esvazia quando string curta
     if (!q || q.trim().length < minChars) {
-      setList([]);
       setError(null);
+      // não zera a lista: deixamos as sugestões do browse carregadas acima
+      // se quiser limpar totalmente, descomente:
+      // setList([]);
       setLoading(false);
       return;
     }
@@ -56,9 +112,11 @@ export function NeoAutocomplete({
       try {
         setLoading(true);
         setError(null);
-        const data = await searchNeo(q.trim(), { signal: ac.signal });
-        setList(data);
-        setActiveIdx(data.length > 0 ? 0 : -1);
+        const found = await searchNeosByText(q.trim(), 3, 25);
+        if (ac.signal.aborted) return;
+        const items = found.map(mapNeoToSearchItem);
+        setList(items);
+        setActiveIdx(items.length > 0 ? 0 : -1);
       } catch (e: any) {
         if (e?.name === "AbortError") return;
         setError(e?.message || "Falha ao buscar na NeoWs");
