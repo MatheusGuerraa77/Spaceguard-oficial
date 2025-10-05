@@ -9,48 +9,48 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* NASA SpaceGuard Theme - Black Hero Dominant */
-    --background: 0 0% 0%; /* #000000 hero black */
-    --background-alt: 0 0% 4%; /* #0B0B0D panel dark */
-    --foreground: 0 0% 100%; /* #FFFFFF white text */
+    --background: 0 0% 0%;            /* #000000 hero black */
+    --background-alt: 0 0% 4%;        /* #0B0B0D panel dark */
+    --foreground: 0 0% 100%;          /* #FFFFFF white text */
 
-    --card: 0 0% 4%; /* #0B0B0D panel dark */
+    --card: 0 0% 4%;                  /* #0B0B0D panel dark */
     --card-foreground: 0 0% 100%;
 
     --popover: 0 0% 4%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 11 93% 56%; /* NASA Red #FC3D21 for CTAs */
+    --primary: 11 93% 56%;            /* NASA Red #FC3D21 for CTAs */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217 91% 31%; /* NASA Blue #0B3D91 */
+    --secondary: 217 91% 31%;         /* NASA Blue #0B3D91 */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 215 14% 12%; /* Dark muted bg */
-    --muted-foreground: 215 9% 80%; /* #C7CBD1 muted text */
+    --muted: 215 14% 12%;             /* Dark muted bg */
+    --muted-foreground: 215 9% 80%;   /* #C7CBD1 muted text */
 
-    --accent: 217 91% 70%; /* #7AA2FF soft blue accent */
+    --accent: 217 91% 70%;            /* #7AA2FF soft blue accent */
     --accent-foreground: 0 0% 0%;
 
-    --destructive: 4 90% 58%; /* #EF4444 */
+    --destructive: 4 90% 58%;         /* #EF4444 */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 25% 15%; /* #1E293B subtle borders */
+    --border: 215 25% 15%;            /* #1E293B subtle borders */
     --input: 0 0% 4%;
-    --ring: 0 0% 100% / 0.25; /* rgba(255,255,255,.25) */
+    --ring: 0 0% 100% / 0.25;         /* rgba(255,255,255,.25) */
 
     --radius: 1rem;
 
     /* SpaceGuard semantic tokens */
-    --nasa-blue: 217 91% 31%; /* #0B3D91 */
-    --nasa-red: 11 93% 56%; /* #FC3D21 */
-    --nasa-red-700: 11 85% 48%; /* #D8341D */
-    --hero-black: 0 0% 0%; /* #000000 */
-    --panel-dark: 0 0% 4%; /* #0B0B0D */
-    --ink: 0 0% 100%; /* #FFFFFF */
-    --muted-text: 215 9% 80%; /* #C7CBD1 */
-    --ok: 142 71% 45%; /* #22C55E */
-    --warn: 38 92% 50%; /* #F59E0B */
-    --err: 4 90% 58%; /* #EF4444 */
+    --nasa-blue: 217 91% 31%;         /* #0B3D91 */
+    --nasa-red: 11 93% 56%;           /* #FC3D21 */
+    --nasa-red-700: 11 85% 48%;       /* #D8341D */
+    --hero-black: 0 0% 0%;            /* #000000 */
+    --panel-dark: 0 0% 4%;            /* #0B0B0D */
+    --ink: 0 0% 100%;                 /* #FFFFFF */
+    --muted-text: 215 9% 80%;         /* #C7CBD1 */
+    --ok: 142 71% 45%;                /* #22C55E */
+    --warn: 38 92% 50%;               /* #F59E0B */
+    --err: 4 90% 58%;                 /* #EF4444 */
 
     --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 0 0% 100%;
@@ -64,6 +64,16 @@ All colors MUST be HSL.
 }
 
 @layer base {
+  /* >>> Garantir altura total do viewport e fundo consistente */
+  html, body, #root {
+    height: 100%;
+  }
+
+  #root {
+    min-height: 100vh;
+    background: hsl(var(--hero-black));
+  }
+
   * {
     @apply border-border;
   }
@@ -71,6 +81,7 @@ All colors MUST be HSL.
   body {
     @apply text-foreground;
     background: hsl(var(--hero-black));
+    margin: 0;
     font-feature-settings: 'rlig' 1, 'calt' 1;
     font-size: 16px;
   }
@@ -119,4 +130,19 @@ All colors MUST be HSL.
   .nasa-panel {
     @apply bg-[hsl(var(--panel-dark))] border-[hsl(var(--border))];
   }
+}
+
+/* Camada fixa do espaço (fundo 3D/estrelas/asteroides) */
+.cosmos-fixed {
+  position: fixed;
+  inset: 0;             /* top/right/bottom/left = 0 */
+  z-index: 0;           /* atrás do conteúdo (ajuste se quiser mais ao fundo) */
+  pointer-events: none; /* não bloqueia cliques/scroll do site */
+  background: transparent;
+}
+
+/* Garante que o conteúdo principal fique acima do fundo */
+.app-shell {
+  position: relative;
+  z-index: 1;
 }

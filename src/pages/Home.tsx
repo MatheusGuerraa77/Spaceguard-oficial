@@ -1,3 +1,4 @@
+// src/pages/Home.tsx
 import {
   lazy,
   Suspense,
@@ -6,6 +7,7 @@ import {
   useEffect,
   type ComponentType,
 } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -19,7 +21,7 @@ import {
 import { Shield, Radar, Zap, Info } from "lucide-react";
 
 /* ===========================
-   BG com asteróides atrás do herói
+   BG com asteróides (camada fixa global via portal)
    (tipado para aceitar speedMultiplier)
 =========================== */
 type AsteroidSceneProps = { speedMultiplier?: number };
@@ -28,6 +30,18 @@ const AsteroidScene = lazy<ComponentType<AsteroidSceneProps>>(async () => {
   // Funciona com "export const AsteroidScene" ou "export default"
   return { default: (m as any).AsteroidScene ?? m.default };
 });
+
+/** Renderiza o AsteroidScene no #cosmos-root (camada fixa, atrás do conteúdo) */
+function FixedAsteroids({ speed }: { speed: number }) {
+  const mount = useMemo(() => document.getElementById("cosmos-root"), []);
+  if (!mount) return null;
+  return createPortal(
+    <Suspense fallback={null}>
+      <AsteroidScene speedMultiplier={speed} />
+    </Suspense>,
+    mount
+  );
+}
 
 /* ===========================
    Terra + órbitas (sem linhas/labels)
@@ -66,18 +80,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Fundo 3D fixo: já aparece atrás do herói assim que carrega */}
+      <FixedAsteroids speed={isHovering ? 1.4 : 1} />
+
       {/* ============================= HERO ============================= */}
       <motion.section
-        className="relative min-h-[88vh] flex items-center overflow-hidden"
+        className="relative min-h-[88vh] flex items-center" // <-- sem overflow-hidden
         style={{ opacity: heroOpacity }}
       >
-        {/* BG com asteróides suaves */}
-        <div className="absolute inset-0 -z-10">
-          <Suspense fallback={null}>
-            <AsteroidScene speedMultiplier={isHovering ? 1.4 : 1} />
-          </Suspense>
-        </div>
-
         {/* Conteúdo do herói em 2 colunas no lg, empilha no mobile */}
         <div className="container relative z-10 px-4 md:px-8 py-16 grid gap-12 lg:grid-cols-2 items-center">
           {/* Coluna: texto + CTAs */}

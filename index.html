@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SpaceGuard - Simulador de Impacto</title>
-
-    <!-- (Opcional) favicon -->
     <link rel="icon" type="image/png" href="/Logo-DualTech-_2_.ico" />
   </head>
   <body>
     <div id="root"></div>
-    <!-- O Vite carrega a aplicação React a partir de /src/main.tsx -->
+
+    <!-- camada fixa para o fundo/canvas -->
+    <div id="cosmos-root" class="cosmos-fixed" aria-hidden="true"></div>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
