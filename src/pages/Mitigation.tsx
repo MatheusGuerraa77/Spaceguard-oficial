@@ -1,13 +1,15 @@
+// src/pages/Mitigation.tsx
 import { useState } from 'react';
+import PageWithAsteroidBg from "@/components/space/PageWithAsteroidBg";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { MapView } from '@/features/map/MapView';
-import { Zap, RotateCcw, TrendingDown } from 'lucide-react';
+import { Zap, RotateCcw, TrendingDown, Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Info } from 'lucide-react';
 
 export default function Mitigation() {
   const [deltaV, setDeltaV] = useState(5); // m/s
@@ -31,7 +33,7 @@ export default function Mitigation() {
   };
 
   return (
-    <div className="min-h-screen py-8">
+    <PageWithAsteroidBg>
       <div className="container px-4 md:px-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Estratégias de Mitigação</h1>
@@ -201,6 +203,6 @@ export default function Mitigation() {
           </div>
         </div>
       </div>
-    </div>
+    </PageWithAsteroidBg>
   );
 }

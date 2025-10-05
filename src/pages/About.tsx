@@ -1,10 +1,12 @@
+// src/pages/About.tsx
+import PageWithAsteroidBg from "@/components/space/PageWithAsteroidBg";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BookOpen, Database, AlertTriangle, ExternalLink } from 'lucide-react';
 
 export default function About() {
   return (
-    <div className="min-h-screen py-8">
+    <PageWithAsteroidBg>
       <div className="container px-4 md:px-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Sobre o SpaceGuard</h1>
@@ -180,9 +182,9 @@ export default function About() {
         <Card className="mt-8 bg-card/50">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground text-center leading-relaxed">
-              SpaceGuard foi desenvolvido com React, TypeScript, Leaflet e Tailwind CSS.{' '}
-              Código aberto e disponível para fins educacionais.{' '}
-              Para mais informações sobre defesa planetária, visite{' '}
+              SpaceGuard foi desenvolvido com React, TypeScript, Leaflet e Tailwind CSS.{` `}
+              Código aberto e disponível para fins educacionais.{` `}
+              Para mais informações sobre defesa planetária, visite{` `}
               <a
                 href="https://www.nasa.gov/planetarydefense"
                 target="_blank"
@@ -196,6 +198,6 @@ export default function About() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageWithAsteroidBg>
   );
 }

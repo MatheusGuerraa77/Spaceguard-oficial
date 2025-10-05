@@ -1,20 +1,34 @@
+// src/pages/Scenario.tsx
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { SimulationRequestSchema, type SimulationRequest, type SimulationResponse } from '@/types/dto';
-import { api } from '@/lib/api';
+
+import PageWithAsteroidBg from "@/components/space/PageWithAsteroidBg";
+
+import {
+  SimulationRequestSchema,
+  type SimulationRequest,
+  type SimulationResponse,
+} from '@/types/dto';
+
+import { api } from '@/lib/api'; // <- agora api.simulate(...)
 import { mockSimulationResponse } from '@/lib/mocks';
+
 import { ScenarioForm } from '@/features/scenario/ScenarioForm';
 import { ResultsPanel } from '@/features/scenario/ResultsPanel';
 import { MapView } from '@/features/map/MapView';
+
 import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 
 export default function Scenario() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SimulationResponse | null>(null);
-  const [impactPoint, setImpactPoint] = useState<[number, number]>([-23.5505, -46.6333]); // [lat, lon] São Paulo
+  const [impactPoint, setImpactPoint] = useState<[number, number]>([
+    -23.5505, // São Paulo
+    -46.6333,
+  ]);
 
   const form = useForm<SimulationRequest>({
     resolver: zodResolver(SimulationRequestSchema),
@@ -30,11 +44,23 @@ export default function Scenario() {
     },
   });
 
+  // type guard para lidar com api que pode retornar { data: ... } ou o objeto direto
+  function isWrapped<T>(x: any): x is { ok?: boolean; data: T } {
+    return x && typeof x === 'object' && 'data' in x;
+  }
+
   const onSubmit = async (data: SimulationRequest) => {
     setIsLoading(true);
     try {
-      const response = await api.post<SimulationResponse>('/simulate', data);
-      setResults(response.data);
+      // api expõe simulate(payload)
+      const res = await api.simulate(data);
+
+      // Tipagem explícita: se vier { data: ... }, usa .data. Senão trata como o próprio objeto.
+      const responseData: SimulationResponse = isWrapped<SimulationResponse>(res)
+        ? (res.data as SimulationResponse)
+        : (res as SimulationResponse);
+
+      setResults(responseData);
       setImpactPoint([data.lat, data.lon]);
       toast.success('Simulação concluída com sucesso!');
     } catch (error) {
@@ -56,7 +82,7 @@ export default function Scenario() {
   };
 
   return (
-    <div className="min-h-screen py-8">
+    <PageWithAsteroidBg>
       <div className="container px-4 md:px-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Simulador de Cenário</h1>
@@ -74,7 +100,7 @@ export default function Scenario() {
           {/* Main Content - Map & Results */}
           <div className="space-y-6">
             {/* Map */}
-            <Card className="overflow-hidden h-[500px] lg:h-[600px]">
+            <Card className="relative z-0 overflow-hidden h-[500px] lg:h-[600px]">
               <MapView
                 impactPoint={impactPoint}
                 zones={results?.zones}
@@ -110,6 +136,6 @@ export default function Scenario() {
           </div>
         </div>
       </div>
-    </div>
+    </PageWithAsteroidBg>
   );
 }
