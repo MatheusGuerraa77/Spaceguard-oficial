@@ -15,7 +15,9 @@ import Mitigation from "./pages/Mitigation";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import AsteroidSearch from "@/pages/AsteroidSearch";
+
 import { useEffect } from "react";
+import GlobalStarfield from "@/components/GlobalStarfield"; // <— IMPORT AQUI
 
 const queryClient = new QueryClient();
 
@@ -31,24 +33,31 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <GameProvider>
       <TooltipProvider>
+        {/* fundo animado global — sutil */}
+        <GlobalStarfield density={200} speed={14} />
+
+        {/* Toasts globais */}
         <Toaster />
         <Sonner />
 
-        {/* app-shell -> fica acima do fundo 3D fixo */}
-        <div className="app-shell flex min-h-screen flex-col bg-transparent">
-          <Header />
-          <main className="flex-1">
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/scenario" element={<Scenario />} />
-              <Route path="/mitigation" element={<Mitigation />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/asteroids" element={<AsteroidSearch />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
+        {/* Remova fundo opaco aqui; deixe transparente */}
+        <div className="flex min-h-screen flex-col bg-transparent">
+          {/* conteúdo acima do canvas */}
+          <div className="relative z-10">
+            <Header />
+            <main className="flex-1">
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/scenario" element={<Scenario />} />
+                <Route path="/mitigation" element={<Mitigation />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/asteroids" element={<AsteroidSearch />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
         </div>
       </TooltipProvider>
     </GameProvider>

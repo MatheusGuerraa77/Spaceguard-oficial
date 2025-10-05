@@ -1,7 +1,7 @@
 // src/features/map/MapView.tsx
-import { useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface MapViewProps {
   impactPoint: [number, number]; // [lat, lon]
@@ -11,7 +11,13 @@ interface MapViewProps {
   showComparison?: boolean;
 }
 
-export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showComparison }: MapViewProps) {
+export function MapView({
+  impactPoint,
+  mitigatedPoint,
+  zones,
+  onMapClick,
+  showComparison,
+}: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<L.LayerGroup | null>(null);
@@ -24,21 +30,38 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
       center: impactPoint,
       zoom: 8,
       zoomControl: true,
+      preferCanvas: true,
+      scrollWheelZoom: true,
     });
+
+    // 🔒 Garante que o container do Leaflet fique sempre atrás do header
+    // (nos poucos casos em que algum CSS externo aumenta z-index)
+    map.getContainer().style.zIndex = "0";
+
     mapRef.current = map;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
       maxZoom: 19,
+      // zIndex bem baixo para não disputar com header
+      zIndex: 1,
     }).addTo(map);
 
-    overlayRef.current = L.layerGroup().addTo(map);
+    overlayRef.current = L.layerGroup(undefined, { pane: "overlayPane" }).addTo(map);
 
     if (onMapClick) {
-      map.on('click', (e: L.LeafletMouseEvent) => {
+      map.on("click", (e: L.LeafletMouseEvent) => {
         onMapClick(e.latlng.lat, e.latlng.lng);
       });
     }
+
+    // cleanup ao desmontar
+    return () => {
+      map.off();
+      map.remove();
+      mapRef.current = null;
+      overlayRef.current = null;
+    };
   }, [impactPoint, onMapClick]);
 
   // update overlays
@@ -51,7 +74,7 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
 
     // Impact marker
     const impactIcon = L.divIcon({
-      className: 'custom-marker',
+      className: "custom-marker",
       html: `<div style="
         width: 24px;
         height: 24px;
@@ -66,12 +89,12 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
 
     L.marker(impactPoint, { icon: impactIcon })
       .addTo(overlay)
-      .bindPopup('<strong>Ponto de Impacto Original</strong>');
+      .bindPopup("<strong>Ponto de Impacto Original</strong>");
 
     // mitigated + line
     if (showComparison && mitigatedPoint) {
       const mitigatedIcon = L.divIcon({
-        className: 'custom-marker',
+        className: "custom-marker",
         html: `<div style="
           width: 24px;
           height: 24px;
@@ -86,12 +109,12 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
 
       L.marker(mitigatedPoint, { icon: mitigatedIcon })
         .addTo(overlay)
-        .bindPopup('<strong>Ponto Após Mitigação</strong>');
+        .bindPopup("<strong>Ponto Após Mitigação</strong>");
 
       L.polyline([impactPoint, mitigatedPoint], {
-        color: '#22C55E',
+        color: "#22C55E",
         weight: 2,
-        dashArray: '5, 10',
+        dashArray: "5, 10",
       }).addTo(overlay);
     }
 
@@ -115,5 +138,13 @@ export function MapView({ impactPoint, mitigatedPoint, zones, onMapClick, showCo
     map.setView(impactPoint, showComparison ? 7 : 8);
   }, [impactPoint, mitigatedPoint, zones, showComparison]);
 
-  return <div ref={mapContainerRef} className="w-full h-full rounded-lg" data-testid="map-view" />;
+  return (
+    <div
+      ref={mapContainerRef}
+      className="relative z-0 w-full h-full rounded-lg overflow-hidden"
+      data-testid="map-view"
+      // Ajuda motores de render a isolar o mapa (melhora performance e evita leaks de z-index)
+      style={{ contain: "layout paint size" }}
+    />
+  );
 }

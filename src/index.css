@@ -146,3 +146,15 @@ All colors MUST be HSL.
   position: relative;
   z-index: 1;
 }
+
+/* Mantém o mapa "abaixo" do topo */
+.leaflet-container {
+  position: relative;  /* já é por padrão, mas deixamos explícito */
+  z-index: 0;
+}
+
+/* Em alguns temas os controles (+/-) também usam z-index alto;
+   manteremos baixo para não cruzar o header */
+.leaflet-control-container {
+  z-index: 1;
+}
