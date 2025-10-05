@@ -9,7 +9,7 @@ export default function About() {
   return (
     <div className="relative min-h-screen pb-12">
       {/* fundo animado — mesma aparência da Home */}
-      <BackgroundAsteroids speed={1.15} overlayStrength={0.3} />
+      <BackgroundAsteroids overlayStrength={0.3} />
 
       <div className="container relative z-10 px-4 md:px-8 max-w-4xl py-8">
         <div className="mb-8">

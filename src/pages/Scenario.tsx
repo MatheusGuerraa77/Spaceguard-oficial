@@ -46,8 +46,13 @@ export default function Scenario() {
   });
 
   // Utilitário: chama o que existir (simulate função OU api.post axios)
-  async function runSimulation(payload: SimulationRequest): Promise<SimulationResponse> {
-    // 1) Preferência: função exportada (alguém pode ter escrito assim)
+  // TIPAGEM do axios só para o TS (não muda o bundle)
+  type AxiosInstance = import("axios").AxiosInstance;
+
+  async function runSimulation(
+    payload: SimulationRequest
+  ): Promise<SimulationResponse> {
+    // 1) Preferência: função exportada do módulo de API (se existir)
     const simulateFn =
       (ApiModule as any).simulate ||
       (ApiModule as any).simulateImpact ||
@@ -58,18 +63,19 @@ export default function Scenario() {
       return data as SimulationResponse;
     }
 
-    // 2) Fallback: axios instance com .post
-    const api = (ApiModule as any).api;
+    // 2) Fallback: instancia axios com .post tipado
+    const api = (ApiModule as any).api as AxiosInstance | undefined;
     if (api && typeof api.post === "function") {
       const res = await api.post<SimulationResponse>("/simulate", payload);
       return res.data;
     }
 
-    // 3) Nada disponível -> lança erro explícito
+    // 3) Nada disponível → erro explícito
     throw new Error(
       "Nenhuma função de simulação encontrada em '@/lib/api'. Esperado 'simulate(...)' ou 'api.post(...)'."
     );
   }
+
 
   const onSubmit = async (data: SimulationRequest) => {
     setIsLoading(true);
@@ -99,7 +105,7 @@ export default function Scenario() {
 
   return (
     <div className="min-h-screen">
-      <BackgroundAsteroids speed={1.15} overlayStrength={0.35} />
+      <BackgroundAsteroids overlayStrength={0.35} />
 
       <div className="container px-4 md:px-8 py-8">
         <div className="mb-8">
