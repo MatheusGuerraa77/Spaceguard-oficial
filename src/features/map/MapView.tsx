@@ -30,38 +30,26 @@ export function MapView({
       center: impactPoint,
       zoom: 8,
       zoomControl: true,
-      preferCanvas: true,
-      scrollWheelZoom: true,
+      // evita qualquer "travamento" por causa de rolagem
+      inertia: true,
+      worldCopyJump: true,
     });
-
-    // 🔒 Garante que o container do Leaflet fique sempre atrás do header
-    // (nos poucos casos em que algum CSS externo aumenta z-index)
-    map.getContainer().style.zIndex = "0";
-
     mapRef.current = map;
 
+    // Camada base com z-index alto para NUNCA cobrir o header
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap contributors",
       maxZoom: 19,
-      // zIndex bem baixo para não disputar com header
-      zIndex: 1,
+      zIndex: 1, // importante: tudo do Leaflet fica abaixo do seu header (que usa z-50)
     }).addTo(map);
 
-    overlayRef.current = L.layerGroup(undefined, { pane: "overlayPane" }).addTo(map);
+    overlayRef.current = L.layerGroup().addTo(map);
 
     if (onMapClick) {
       map.on("click", (e: L.LeafletMouseEvent) => {
         onMapClick(e.latlng.lat, e.latlng.lng);
       });
     }
-
-    // cleanup ao desmontar
-    return () => {
-      map.off();
-      map.remove();
-      mapRef.current = null;
-      overlayRef.current = null;
-    };
   }, [impactPoint, onMapClick]);
 
   // update overlays
@@ -72,15 +60,12 @@ export function MapView({
 
     overlay.clearLayers();
 
-    // Impact marker
+    // Impact marker (vermelho)
     const impactIcon = L.divIcon({
       className: "custom-marker",
       html: `<div style="
-        width: 24px;
-        height: 24px;
-        background: #EF4444;
-        border: 3px solid white;
-        border-radius: 50%;
+        width: 24px; height: 24px; background: #EF4444;
+        border: 3px solid white; border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
       "></div>`,
       iconSize: [24, 24],
@@ -91,16 +76,13 @@ export function MapView({
       .addTo(overlay)
       .bindPopup("<strong>Ponto de Impacto Original</strong>");
 
-    // mitigated + line
+    // mitigated + line (verde)
     if (showComparison && mitigatedPoint) {
       const mitigatedIcon = L.divIcon({
         className: "custom-marker",
         html: `<div style="
-          width: 24px;
-          height: 24px;
-          background: #22C55E;
-          border: 3px solid white;
-          border-radius: 50%;
+          width: 24px; height: 24px; background: #22C55E;
+          border: 3px solid white; border-radius: 50%;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         "></div>`,
         iconSize: [24, 24],
@@ -118,7 +100,7 @@ export function MapView({
       }).addTo(overlay);
     }
 
-    // zones
+    // zonas
     if (zones?.features?.length) {
       zones.features.forEach((feature: any) => {
         const { radius_km, color, name, description } = feature.properties;
@@ -141,10 +123,9 @@ export function MapView({
   return (
     <div
       ref={mapContainerRef}
-      className="relative z-0 w-full h-full rounded-lg overflow-hidden"
+      className="w-full h-full rounded-lg"
       data-testid="map-view"
-      // Ajuda motores de render a isolar o mapa (melhora performance e evita leaks de z-index)
-      style={{ contain: "layout paint size" }}
+      style={{ zIndex: 1 }} // deixa o mapa sempre atrás do header (z-50)
     />
   );
 }

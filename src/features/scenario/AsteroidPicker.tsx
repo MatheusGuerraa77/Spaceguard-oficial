@@ -19,12 +19,15 @@ export default function AsteroidPicker({ onPick, placeholder }: Props) {
 
   const doSearch = async (term: string) => {
     const t = term.trim();
-    if (t.length < 2) {
+
+    // Se input vazio, limpa e não busca
+    if (t.length === 0) {
       setItems([]);
       setErr(null);
       return;
     }
 
+    // Cancela requisição anterior (se houver)
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -43,6 +46,7 @@ export default function AsteroidPicker({ onPick, placeholder }: Props) {
     }
   };
 
+  // Evita requisições excessivas
   const debounced = useMemo(() => debounce(doSearch, 350), []);
 
   useEffect(() => {
@@ -62,6 +66,12 @@ export default function AsteroidPicker({ onPick, placeholder }: Props) {
             onChange={(e) => setQ(e.target.value)}
             placeholder={placeholder || "Busque por nome/designação/ID..."}
             className="pl-8"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                // dispara imediatamente ao Enter
+                doSearch((e.target as HTMLInputElement).value);
+              }
+            }}
           />
         </div>
         <p className="text-[11px] text-white/50 mt-1">
@@ -76,7 +86,7 @@ export default function AsteroidPicker({ onPick, placeholder }: Props) {
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Carregando...
             </>
           ) : err ? (
-            <span className="text-red-300">Erro: {err}</span>
+            <span className="text-red-300">{err}</span>
           ) : items.length === 0 ? (
             <span>Nenhum resultado</span>
           ) : (
@@ -98,6 +108,7 @@ export default function AsteroidPicker({ onPick, placeholder }: Props) {
                   {typeof it.estimated_diameter_m === "number" && (
                     <span>⌀ ~{Math.round(it.estimated_diameter_m)} m</span>
                   )}
+                  {it.designation && <span>• {it.designation}</span>}
                 </div>
               </li>
             ))}
