@@ -56,16 +56,7 @@ export default function Navbar() {
         <div className="flex-1" />
 
         {/* Search (placeholder) */}
-        <div className="relative hidden md:block">
-          <input
-            type="search"
-            placeholder="Search..."
-            className="w-56 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/40 outline-none focus:border-white/20"
-          />
-          <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 select-none rounded border border-white/10 bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60">
-            /
-          </kbd>
-        </div>
+        
       </div>
     </header>
   );

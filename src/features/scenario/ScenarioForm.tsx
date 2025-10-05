@@ -273,32 +273,7 @@ export function ScenarioForm({ form, onSubmit, isLoading }: Props) {
               )}
             />
 
-            {/* Terreno */}
-            <FormField
-              control={form.control}
-              name="terrain"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Terreno</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value ?? "land"}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o terreno" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="auto">Automático (USGS)</SelectItem>
-                      <SelectItem value="ocean">Oceano</SelectItem>
-                      <SelectItem value="land">Continental</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription className="text-xs">
-                    Em <b>Automático</b>, o servidor consulta a elevação (USGS) e decide entre oceano/continente.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           
 
             <Button type="submit" className="w-full" disabled={isLoading} data-testid="simulate-button">
               {isLoading ? (
