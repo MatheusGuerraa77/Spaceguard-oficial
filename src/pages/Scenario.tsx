@@ -87,12 +87,17 @@ export default function Scenario() {
     try {
       // api.simulate retorna { ok: boolean; data: SimulationResponse }
       const res = await api.simulate(payload);
-
       if (!res?.ok) {
         throw new Error("Simulação falhou");
       }
 
-      setResults(res.data); // ✅ agora o tipo bate com SimulationResponse
+      // 🔒 Normaliza zones p/ evitar undefined
+      const normalized: SimulationResponse = {
+        ...res.data,
+        zones: Array.isArray(res.data?.zones) ? res.data.zones : [],
+      };
+
+      setResults(normalized);
       setImpactPoint([payload.lat, payload.lon]);
       toast.success("Simulação concluída com sucesso!");
     } catch (error) {
@@ -100,7 +105,15 @@ export default function Scenario() {
       toast.warning("API indisponível - usando dados de demonstração", {
         description: "Os resultados abaixo são baseados em um cenário de exemplo",
       });
-      setResults(mockSimulationResponse);
+
+      const fallback: SimulationResponse = {
+        ...mockSimulationResponse,
+        zones: Array.isArray(mockSimulationResponse?.zones)
+          ? mockSimulationResponse.zones
+          : [],
+      };
+
+      setResults(fallback);
       setImpactPoint([payload.lat, payload.lon]);
     } finally {
       setIsLoading(false);
@@ -142,7 +155,8 @@ export default function Scenario() {
                   Restaurar reais
                 </Button>
               </div>
-              <NeoAutocomplete onPick={handlePickNeo} loadingExternal={loadingNeo} />
+              {/* ✅ usa disabled em vez de prop inexistente */}
+              <NeoAutocomplete onPick={handlePickNeo} disabled={loadingNeo} />
               <p className="text-xs text-muted-foreground mt-2">
                 Ao selecionar, diâmetro e velocidade são preenchidos com os
                 valores mais recentes do NeoWs. Você pode editar os campos à vontade.
@@ -159,7 +173,7 @@ export default function Scenario() {
             <Card className="overflow-hidden h-[500px] lg:h-[600px]">
               <MapView
                 impactPoint={impactPoint}
-                zones={results?.zones}
+                zones={results?.zones ?? []}   // 🔒 fallback
                 onMapClick={handleMapClick}
               />
             </Card>
