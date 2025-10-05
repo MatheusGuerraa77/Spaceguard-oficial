@@ -110,19 +110,19 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/20 border border-secondary/30 text-sm backdrop-blur-sm">
               <Shield className="h-4 w-4 text-secondary" />
               <span className="text-white font-medium">
-                NASA Meteor Madness Challenge
+                NASA Desafio da Loucura do Meteoro
               </span>
             </div>
 
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-[0.95]">
-              Return to
+              Voltar para
               <br />
               <span className="text-muted-foreground">SpaceGuard</span>
             </h1>
 
             <p className="text-lg md:text-2xl text-muted-foreground max-w-2xl">
-              Visualize, understand, and mitigate asteroid impact risks with
-              scientific precision
+              Visualize, compreenda e mitigue os riscos de impacto de asteroides com
+              precisão científica
             </p>
 
             <motion.div
@@ -158,7 +158,7 @@ export default function Home() {
                 >
                   <Link to="/mitigation">
                     <Zap className="mr-2 h-5 w-5" />
-                    Defender a Terra
+                    Estratégias de Mitigação
                   </Link>
                 </Button>
               </motion.div>
