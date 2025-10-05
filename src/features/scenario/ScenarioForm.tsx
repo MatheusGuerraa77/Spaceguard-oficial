@@ -1,13 +1,34 @@
-import { UseFormReturn } from 'react-hook-form';
-import { SimulationRequest } from '@/types/dto';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Rocket } from 'lucide-react';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import AsteroidPicker from './AsteroidPicker';
-import type { NEOSearchItem } from '@/types/dto';
+// src/features/scenario/ScenarioForm.tsx
+import { UseFormReturn } from "react-hook-form";
+import { SimulationRequest } from "@/types/dto";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Rocket } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import AsteroidPicker from "./AsteroidPicker";
+import type { NEOSearchItem } from "@/types/dto";
 
 interface ScenarioFormProps {
   form: UseFormReturn<SimulationRequest>;
@@ -15,17 +36,21 @@ interface ScenarioFormProps {
   isLoading: boolean;
 }
 
+/** Helper para inputs numéricos: usa valueAsNumber e faz fallback seguro */
+function toNumberSafe(e: React.ChangeEvent<HTMLInputElement>) {
+  const n = e.target.valueAsNumber;
+  return Number.isFinite(n) ? n : (e.target.value ? parseFloat(e.target.value) : undefined);
+}
+
 export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
   const handlePick = (neo: NEOSearchItem) => {
-    // Preenche o form com o que temos (diâmetro médio em metros, se vier)
-    if (typeof neo.estimated_diameter_m === 'number') {
-      form.setValue('diameter_m', Math.round(neo.estimated_diameter_m));
+    // Se vier diâmetro médio (m), preenche direto
+    if (typeof neo.estimated_diameter_m === "number") {
+      form.setValue("diameter_m", Math.round(neo.estimated_diameter_m), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
-    // Você pode decidir regras para lat/lon a partir do usuário/mapa; não há lat/lon na resposta do browse
-    // Mantemos os demais campos como estão.
-
-    // feedback visual simples (opcional)
-    // toast.success(`Selecionado: ${neo.name}`);
   };
 
   return (
@@ -37,17 +62,20 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
           </div>
           <div>
             <CardTitle>Parâmetros do Asteroide</CardTitle>
-            <CardDescription>Configure as características do impacto</CardDescription>
+            <CardDescription>
+              Configure as características do impacto
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
-        {/* 🔭 Picker NASA */}
+        {/* 🔭 Busca (preenche o diâmetro quando disponível) */}
         <AsteroidPicker onPick={handlePick} />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            {/* Diameter */}
+            {/* Diâmetro */}
             <FormField
               control={form.control}
               name="diameter_m"
@@ -57,8 +85,9 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
                   <FormControl>
                     <Input
                       type="number"
+                      placeholder="ex: 300"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => field.onChange(toNumberSafe(e))}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -69,7 +98,7 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
               )}
             />
 
-            {/* Density */}
+            {/* Densidade */}
             <FormField
               control={form.control}
               name="density_kgm3"
@@ -79,8 +108,9 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
                   <FormControl>
                     <Input
                       type="number"
+                      placeholder="ex: 3000"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => field.onChange(toNumberSafe(e))}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -91,7 +121,7 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
               )}
             />
 
-            {/* Velocity */}
+            {/* Velocidade */}
             <FormField
               control={form.control}
               name="velocity_ms"
@@ -101,8 +131,9 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
                   <FormControl>
                     <Input
                       type="number"
+                      placeholder="ex: 20000"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => field.onChange(toNumberSafe(e))}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -113,7 +144,7 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
               )}
             />
 
-            {/* Angle */}
+            {/* Ângulo */}
             <FormField
               control={form.control}
               name="angle_deg"
@@ -123,8 +154,9 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
                   <FormControl>
                     <Input
                       type="number"
+                      placeholder="ex: 45"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => field.onChange(toNumberSafe(e))}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -146,8 +178,9 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
                     <Input
                       type="number"
                       step="0.0001"
+                      placeholder="ex: -23.5505"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => field.onChange(toNumberSafe(e))}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -169,8 +202,9 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
                     <Input
                       type="number"
                       step="0.0001"
+                      placeholder="ex: -46.6333"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      onChange={(e) => field.onChange(toNumberSafe(e))}
                     />
                   </FormControl>
                   <FormDescription className="text-xs">
@@ -181,32 +215,38 @@ export function ScenarioForm({ form, onSubmit, isLoading }: ScenarioFormProps) {
               )}
             />
 
-            {/* Terrain */}
+            {/* Terreno (inclui AUTO) */}
             <FormField
               control={form.control}
               name="terrain"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Terreno</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o terreno" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="auto">Automático (USGS)</SelectItem>
                       <SelectItem value="ocean">Oceano</SelectItem>
                       <SelectItem value="land">Continental</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription className="text-xs">
-                    Tipo de superfície no ponto de impacto
+                    Em <b>Automático</b>, o servidor consulta a elevação (USGS) e
+                    decide entre oceano/continente.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Botão de simulação */}
             <Button
               type="submit"
               className="w-full"
