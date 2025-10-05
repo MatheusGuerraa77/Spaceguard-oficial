@@ -6,12 +6,17 @@ import React, { useEffect, useRef } from "react";
  * - Não captura cliques (pointer-events-none).
  * - Sem dependências externas.
  */
-type Props = {
+type BaseProps = {
   /** Multiplicador de velocidade geral (1 = padrão) */
   speed?: number;
   /** Força da vinheta (0.0 a 1.0) */
   overlayStrength?: number;
+  /** Classe opcional aplicada ao container dos children */
+  className?: string;
 };
+
+// Agora o componente aceita children
+type Props = React.PropsWithChildren<BaseProps>;
 
 type Star = { x: number; y: number; r: number; s: number };
 type Asteroid = {
@@ -33,6 +38,8 @@ function rand(min: number, max: number) {
 export default function BackgroundAsteroids({
   speed = 1,
   overlayStrength = 0.35,
+  className,
+  children,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -93,7 +100,7 @@ export default function BackgroundAsteroids({
 
     const w = canvas.width;
     const h = canvas.height;
-    const elapsed = lastRef.current ? (t - lastRef.current) : 16;
+    const elapsed = lastRef.current ? t - lastRef.current : 16;
     lastRef.current = t;
     const dt = Math.min(32, elapsed) * (speed / 16); // normaliza delta
 
@@ -172,6 +179,9 @@ export default function BackgroundAsteroids({
   };
 
   useEffect(() => {
+    // evita rodar em ambientes sem window (SSR)
+    if (typeof window === "undefined") return;
+
     setup();
     rafRef.current = requestAnimationFrame(draw);
     const onResize = () => {
@@ -186,12 +196,18 @@ export default function BackgroundAsteroids({
   }, [speed, overlayStrength]);
 
   return (
-    <div className="fixed inset-0 -z-10 pointer-events-none">
-      <canvas
-        ref={canvasRef}
-        className="w-full h-full block"
-        style={{ display: "block" }}
-      />
-    </div>
+    <>
+      {/* Canvas fixo no fundo */}
+      <div className="fixed inset-0 -z-10 pointer-events-none">
+        <canvas
+          ref={canvasRef}
+          className="w-full h-full block"
+          style={{ display: "block" }}
+        />
+      </div>
+
+      {/* Conteúdo por cima do fundo (children) */}
+      <div className={className}>{children}</div>
+    </>
   );
 }
