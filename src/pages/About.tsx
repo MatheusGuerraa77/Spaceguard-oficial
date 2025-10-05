@@ -2,28 +2,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BookOpen, Database, AlertTriangle, ExternalLink } from 'lucide-react';
 
-// 🔭 fundo com asteroides (igual Home)
-import BackgroundAsteroids from '@/components/space/BackgroundAsteroids';
-
 export default function About() {
   return (
-    <div className="relative min-h-screen pb-12">
-      {/* fundo animado — mesma aparência da Home */}
-      <BackgroundAsteroids speed={1.15} overlayStrength={0.3} />
-
-      <div className="container relative z-10 px-4 md:px-8 max-w-4xl py-8">
+    <div className="min-h-screen py-8">
+      <div className="container px-4 md:px-8 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Sobre o SpaceGuard</h1>
-          <p className="text-muted-foreground text-lg">Metodologia, fontes de dados e limitações do sistema</p>
+          <p className="text-muted-foreground text-lg">
+            Metodologia, fontes de dados e limitações do sistema
+          </p>
         </div>
 
         {/* Mission Statement */}
         <Card className="mb-8 border-primary/20 bg-primary/5">
           <CardContent className="pt-6">
             <p className="text-lg leading-relaxed">
-              SpaceGuard é uma ferramenta educacional desenvolvida para o <strong>NASA Impactor-2025 Challenge</strong>,
-              com o objetivo de democratizar o acesso a simulações de impacto de asteroides e estratégias de defesa
-              planetária.
+              SpaceGuard é uma ferramenta educacional desenvolvida para o{' '}
+              <strong>NASA Impactor-2025 Challenge</strong>, com o objetivo de democratizar 
+              o acesso a simulações de impacto de asteroides e estratégias de defesa planetária.
             </p>
           </CardContent>
         </Card>
@@ -46,16 +42,16 @@ export default function About() {
                   <code className="px-2 py-1 bg-muted rounded text-xs">E = ½ × m × v²</code>
                 </p>
                 <p className="text-sm mt-2">
-                  Onde <strong>m</strong> é a massa (derivada de diâmetro × densidade) e <strong>v</strong> é a
-                  velocidade de impacto.
+                  Onde <strong>m</strong> é a massa (derivada de diâmetro × densidade) e{' '}
+                  <strong>v</strong> é a velocidade de impacto.
                 </p>
               </div>
 
               <div>
                 <h4 className="font-semibold text-foreground mb-2">Diâmetro da Cratera</h4>
                 <p className="text-sm leading-relaxed">
-                  Utilizamos <strong>relações de escala π (pi-scaling)</strong> baseadas em trabalhos como Holsapple &
-                  Schmidt (1982) e Collins et al. (2005).
+                  Utilizamos <strong>relações de escala π (pi-scaling)</strong> baseadas em trabalhos como 
+                  Holsapple & Schmidt (1982) e Collins et al. (2005).
                 </p>
                 <p className="text-sm mt-2">
                   Fatores considerados: ângulo de impacto, densidade do projétil e do alvo, gravidade local.
@@ -65,8 +61,8 @@ export default function About() {
               <div>
                 <h4 className="font-semibold text-foreground mb-2">Magnitude Sísmica (Mw)</h4>
                 <p className="text-sm leading-relaxed">
-                  Convertemos uma fração da energia cinética (fator de acoplamento sísmico ~0.02) em energia sísmica,
-                  usando a relação USGS:{' '}
+                  Convertemos uma fração da energia cinética (fator de acoplamento sísmico ~0.02) 
+                  em energia sísmica, usando a relação USGS:{' '}
                   <code className="px-2 py-1 bg-muted rounded text-xs">log₁₀(E) = 1.5 × Mw + 4.8</code>
                 </p>
               </div>
@@ -74,8 +70,8 @@ export default function About() {
               <div>
                 <h4 className="font-semibold text-foreground mb-2">Zonas de Dano</h4>
                 <p className="text-sm leading-relaxed">
-                  As zonas são círculos concêntricos estimados com base em modelos de sobrepressão atmosférica e ondas
-                  de choque. Distâncias variam com a energia total liberada.
+                  As zonas são círculos concêntricos estimados com base em modelos de sobrepressão 
+                  atmosférica e ondas de choque. Distâncias variam com a energia total liberada.
                 </p>
               </div>
             </AccordionContent>
@@ -146,34 +142,34 @@ export default function About() {
               <div>
                 <h4 className="font-semibold text-foreground mb-2">⚠️ Modelos Simplificados</h4>
                 <p className="text-sm leading-relaxed">
-                  Esta ferramenta usa <strong>aproximações educacionais</strong>. Simulações reais de impacto requerem
-                  códigos hidrodinâmicos complexos (e.g., CTH, iSALE) que modelam fragmentação, vaporização e efeitos
-                  atmosféricos.
+                  Esta ferramenta usa <strong>aproximações educacionais</strong>. Simulações reais de 
+                  impacto requerem códigos hidrodinâmicos complexos (e.g., CTH, iSALE) que modelam 
+                  fragmentação, vaporização e efeitos atmosféricos.
                 </p>
               </div>
 
               <div>
                 <h4 className="font-semibold text-foreground mb-2">🌊 Tsunamis Não Modelados</h4>
                 <p className="text-sm leading-relaxed">
-                  Impactos oceânicos podem gerar tsunamis devastadores. SpaceGuard não modela propagação de ondas
-                  marinhas, altura de onda ou zonas costeiras afetadas.
+                  Impactos oceânicos podem gerar tsunamis devastadores. SpaceGuard não modela 
+                  propagação de ondas marinhas, altura de onda ou zonas costeiras afetadas.
                 </p>
               </div>
 
               <div>
                 <h4 className="font-semibold text-foreground mb-2">🛡️ Uso Responsável</h4>
                 <p className="text-sm leading-relaxed">
-                  Os resultados são <strong>apenas educacionais</strong> e não devem ser usados para planejamento de
-                  emergência real. Consulte sempre autoridades oficiais (NASA, ESA, agências de proteção civil) para
-                  informações validadas.
+                  Os resultados são <strong>apenas educacionais</strong> e não devem ser usados 
+                  para planejamento de emergência real. Consulte sempre autoridades oficiais 
+                  (NASA, ESA, agências de proteção civil) para informações validadas.
                 </p>
               </div>
 
               <div>
                 <h4 className="font-semibold text-foreground mb-2">📊 Incertezas</h4>
                 <p className="text-sm leading-relaxed">
-                  Asteroides reais têm incertezas em composição, densidade, órbita e orientação. Simulações
-                  profissionais incluem análises de Monte Carlo com milhares de cenários.
+                  Asteroides reais têm incertezas em composição, densidade, órbita e orientação. 
+                  Simulações profissionais incluem análises de Monte Carlo com milhares de cenários.
                 </p>
               </div>
             </AccordionContent>
@@ -184,8 +180,9 @@ export default function About() {
         <Card className="mt-8 bg-card/50">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground text-center leading-relaxed">
-              SpaceGuard foi desenvolvido com React, TypeScript, Leaflet e Tailwind CSS. Código aberto e disponível
-              para fins educacionais. Para mais informações sobre defesa planetária, visite{' '}
+              SpaceGuard foi desenvolvido com React, TypeScript, Leaflet e Tailwind CSS.{' '}
+              Código aberto e disponível para fins educacionais.{' '}
+              Para mais informações sobre defesa planetária, visite{' '}
               <a
                 href="https://www.nasa.gov/planetarydefense"
                 target="_blank"
