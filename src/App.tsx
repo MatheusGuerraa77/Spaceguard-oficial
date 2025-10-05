@@ -16,6 +16,8 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import AsteroidSearch from "@/pages/AsteroidSearch";
 import { useEffect } from "react";
+import 'leaflet/dist/leaflet.css';
+
 
 const queryClient = new QueryClient();
 

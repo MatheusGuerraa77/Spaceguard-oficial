@@ -1,10 +1,12 @@
 // src/services/neo.ts
-import type { NEOSearchItem } from "@/types/dto";
+import type { NEOSearchItem, NEOLookupResponse } from "@/types/dto";
 
 const API = "https://api.nasa.gov/neo/rest/v1";
 const KEY = import.meta.env.VITE_NASA_KEY || "DEMO_KEY";
 
-// --- utils ----
+/* =========================================
+ * Utils: mapeia item do NeoWs -> NEOSearchItem
+ * ========================================= */
 function mapNeoToItem(n: any): NEOSearchItem {
   const diameterMax = n?.estimated_diameter?.meters?.estimated_diameter_max ?? null;
   return {
@@ -12,18 +14,50 @@ function mapNeoToItem(n: any): NEOSearchItem {
     name: String(n?.name ?? ""),
     designation: n?.designation ? String(n.designation) : undefined,
     estimated_diameter_m: typeof diameterMax === "number" ? diameterMax : null,
-    // se seu NEOSearchItem tiver mais campos, mapeie aqui
+    // opcional, casa com seu schema:
+    orbit: n?.orbital_data ?? undefined,
   };
 }
 
-// ------------------------------
-// 1) Busca simples para autocomplete (browse + filtro local)
-// ------------------------------
+/* =====================================================
+ * Normalizador: NeoWs (lookup por ID) -> NEOLookupResponse
+ * ===================================================== */
+export function normalizeNeoLookup(raw: any): NEOLookupResponse {
+  // média simples do diâmetro em metros, se existir
+  const dMin = raw?.estimated_diameter?.meters?.estimated_diameter_min;
+  const dMax = raw?.estimated_diameter?.meters?.estimated_diameter_max;
+
+  const estimated_diameter_m =
+    typeof dMin === "number" && typeof dMax === "number"
+      ? (dMin + dMax) / 2
+      : null;
+
+  const absolute_magnitude_h =
+    typeof raw?.absolute_magnitude_h === "number"
+      ? raw.absolute_magnitude_h
+      : undefined;
+
+  // flag PHA (normalizada para o seu DTO)
+  const is_potentially_hazardous = !!raw?.is_potentially_hazardous_asteroid;
+
+  return {
+    id: String(raw?.id ?? ""),
+    name: String(raw?.name ?? ""),
+    estimated_diameter_m,
+    absolute_magnitude_h,
+    is_potentially_hazardous,
+    close_approach_data: raw?.close_approach_data,
+    orbital_data: raw?.orbital_data,
+  };
+}
+
+/* ===============================================
+ * 1) Busca simples para autocomplete (browse local)
+ * =============================================== */
 export async function searchNeo(
   q: string,
   opts?: { signal?: AbortSignal }
 ): Promise<NEOSearchItem[]> {
-  // pega uma página e filtra por nome/designação/id
   const url = `${API}/neo/browse?api_key=${KEY}&page=0&size=50`;
   const res = await fetch(url, { signal: opts?.signal });
 
@@ -46,10 +80,12 @@ export async function searchNeo(
   return filtered.map(mapNeoToItem);
 }
 
-// ------------------------------
-// 2) Detalhe por ID
-// ------------------------------
-export async function getNeoById(
+/* ============================
+ * 2) Detalhe por ID (2 variantes)
+ * ============================ */
+
+/** Versão BRUTA (como vem da NASA) */
+export async function getNeoByIdRaw(
   id: string,
   opts?: { signal?: AbortSignal }
 ): Promise<any> {
@@ -62,9 +98,19 @@ export async function getNeoById(
   return res.json();
 }
 
-// ------------------------------
-// 3) FEED (janela de até 7 dias) + filtros/ordenação locais
-// ------------------------------
+/** Versão NORMALIZADA (bate com seu NEOLookupResponse do dto.ts) */
+export async function getNeoById(
+  id: string,
+  opts?: { signal?: AbortSignal }
+): Promise<NEOLookupResponse> {
+  const raw = await getNeoByIdRaw(id, opts);
+  return normalizeNeoLookup(raw);
+}
+
+/* ======================================================
+ * 3) FEED (janela de até 7 dias) + filtros/ordenação locais
+ * ====================================================== */
+
 export type NeoFeedOptions = {
   start: string;           // 'YYYY-MM-DD'
   end: string;             // 'YYYY-MM-DD' (máx. 7 dias após start)
@@ -91,7 +137,7 @@ export async function fetchNeoFeed(opts: NeoFeedOptions): Promise<NEOSearchItem[
 
   // O feed vem como { near_earth_objects: { 'YYYY-MM-DD': [NEO, ...], ... } }
   const byDate = data?.near_earth_objects ?? {};
-  const flat: any[] = Object.values(byDate).flat() as any[];
+  const flat: any[] = (Object.values(byDate) as any[]).flat();
 
   // filtros locais
   const term = (query ?? "").toLowerCase();
@@ -105,7 +151,7 @@ export async function fetchNeoFeed(opts: NeoFeedOptions): Promise<NEOSearchItem[
       if (Number(n.absolute_magnitude_h) > maxH) return false;
     }
 
-    // diâmetro mínimo em metros
+    // diâmetro mínimo em metros (usa o max estimado como proxy)
     if (typeof minDiameterM === "number") {
       const dmax = n?.estimated_diameter?.meters?.estimated_diameter_max;
       if (!(typeof dmax === "number" && dmax >= minDiameterM)) return false;
@@ -140,7 +186,7 @@ export async function fetchNeoFeed(opts: NeoFeedOptions): Promise<NEOSearchItem[
   } else if (sort === "name_az") {
     filtered.sort((a, b) => String(a?.name ?? "").localeCompare(String(b?.name ?? "")));
   } else {
-    // "relevance": deixa como veio, ou poderia ordenar por PHA + H etc.
+    // "relevance": mantém a ordem natural (ou aqui você poderia pesar PHA + H)
   }
 
   return filtered.map(mapNeoToItem);
