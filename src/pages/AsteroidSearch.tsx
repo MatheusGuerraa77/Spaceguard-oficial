@@ -12,6 +12,40 @@ import {
 import { fetchNeoFeed } from "@/services/neo";
 import SolarBackdrop from "@/components/space/SolarBackdrop";
 
+/* =======================
+   Tipos auxiliares (NEOWS)
+   ======================= */
+type NEODiameterKM = {
+  estimated_diameter_min: number;
+  estimated_diameter_max: number;
+};
+
+type NEOWSNeo = {
+  id: string;
+  name: string;
+  is_potentially_hazardous_asteroid?: boolean;
+  absolute_magnitude_h?: number;
+  estimated_diameter?: {
+    kilometers?: NEODiameterKM;
+  };
+  close_approach_data?: Array<{
+    close_approach_date?: string;
+    close_approach_date_full?: string;
+    miss_distance?: { kilometers?: string };
+    relative_velocity?: { kilometers_per_second?: string };
+  }>;
+  orbital_data?: {
+    orbit_class?: { orbit_class_type?: string };
+  };
+};
+
+type NEOFeedResponse = {
+  near_earth_objects: Record<string, NEOWSNeo[]>;
+};
+
+/* ==============
+   Tipo da página
+   ============== */
 type Asteroid = {
   id: string;
   name: string;
@@ -159,48 +193,57 @@ export default function AsteroidSearch() {
   const [rows, setRows] = useState<Asteroid[]>([]);
   const [openItem, setOpenItem] = useState<Asteroid | null>(null);
 
+  // Normaliza NEOWS -> Asteroid[]
+  function normalizeNEO(list: NEOWSNeo[]): Asteroid[] {
+    const out: Asteroid[] = [];
+    for (const neo of list) {
+      const ca = neo.close_approach_data?.[0];
+      const estKm = neo.estimated_diameter?.kilometers;
+
+      out.push({
+        id: String(neo.id),
+        name: neo.name,
+        pha: !!neo.is_potentially_hazardous_asteroid,
+        hMag: typeof neo.absolute_magnitude_h === "number" ? neo.absolute_magnitude_h : null,
+        minDiaKm: estKm ? Math.round(estKm.estimated_diameter_min * 1000) / 1000 : null,
+        maxDiaKm: estKm ? Math.round(estKm.estimated_diameter_max * 1000) / 1000 : null,
+        orbitClass: neo.orbital_data?.orbit_class?.orbit_class_type ?? null,
+        closeApproachDate: ca?.close_approach_date_full || ca?.close_approach_date || null,
+        missKm: ca?.miss_distance?.kilometers ? Number(ca.miss_distance.kilometers) : null,
+        velKms: ca?.relative_velocity?.kilometers_per_second
+          ? Number(ca.relative_velocity.kilometers_per_second)
+          : null,
+      });
+    }
+    return out;
+  }
+
   // carregar feed
   const load = async () => {
     try {
       setLoading(true);
       setErr(null);
 
-      const data = await fetchNeoFeed(start, end);
-      const out: Asteroid[] = [];
-      const byDate: Record<string, any[]> = data.near_earth_objects || {};
+      const data: unknown = await fetchNeoFeed({ start, end });
 
-      for (const d of Object.keys(byDate)) {
-        for (const neo of byDate[d]) {
-          const ca = neo.close_approach_data?.[0];
-          const estKm = neo.estimated_diameter?.kilometers;
 
-          out.push({
-            id: String(neo.id),
-            name: neo.name,
-            pha: !!neo.is_potentially_hazardous_asteroid,
-            hMag:
-              typeof neo.absolute_magnitude_h === "number"
-                ? neo.absolute_magnitude_h
-                : null,
-            minDiaKm: estKm ? Math.round(estKm.estimated_diameter_min * 1000) / 1000 : null,
-            maxDiaKm: estKm ? Math.round(estKm.estimated_diameter_max * 1000) / 1000 : null,
-            orbitClass: neo.orbital_data?.orbit_class?.orbit_class_type ?? null,
-            closeApproachDate: ca?.close_approach_date_full || ca?.close_approach_date || null,
-            missKm: ca?.miss_distance?.kilometers
-              ? Number(ca.miss_distance.kilometers)
-              : null,
-            velKms: ca?.relative_velocity?.kilometers_per_second
-              ? Number(ca.relative_velocity.kilometers_per_second)
-              : null,
-          });
-        }
+      let flattened: Asteroid[] = [];
+      if (data && typeof data === "object" && "near_earth_objects" in (data as any)) {
+        const feed = data as NEOFeedResponse;
+        const buckets = Object.values(feed.near_earth_objects || {});
+        const all: NEOWSNeo[] = ([] as NEOWSNeo[]).concat(...buckets);
+        flattened = normalizeNEO(all);
+      } else if (Array.isArray(data)) {
+        flattened = data as Asteroid[];
+      } else {
+        throw new Error("Resposta inesperada do feed.");
       }
 
-      out.sort((a, b) => (a.closeApproachDate ?? "").localeCompare(b.closeApproachDate ?? ""));
-      setRows(out);
+      flattened.sort((a, b) => (a.closeApproachDate ?? "").localeCompare(b.closeApproachDate ?? ""));
+      setRows(flattened);
       setPage(1);
     } catch (e: any) {
-      setErr(e.message || "Erro ao carregar feed.");
+      setErr(e?.message || "Erro ao carregar feed.");
     } finally {
       setLoading(false);
     }
@@ -248,6 +291,11 @@ export default function AsteroidSearch() {
   useEffect(() => setPage(1), [q, onlyPHA, hMax, minDia, sort, view]);
   const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  // --- handlers de paginação e de abrir drawer (curried) ---
+  const goPrev = () => setPage((p) => Math.max(1, p - 1));
+  const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
+  const openItemHandler = (a: Asteroid) => () => setOpenItem(a);
+
   /* ---------------- UI ---------------- */
 
   return (
@@ -263,8 +311,7 @@ export default function AsteroidSearch() {
           transition={{ duration: 0.35 }}
           className="max-w-5xl"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs backdrop-blur-sm mb-4
-                          border-teal-400/20 bg-teal-400/10 text-teal-200">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs backdrop-blur-sm mb-4 border-teal-400/20 bg-teal-400/10 text-teal-200">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             NASA NeoWs – dados reais (via /api/neo/feed)
           </div>
@@ -294,8 +341,7 @@ export default function AsteroidSearch() {
                   type="date"
                   value={start}
                   onChange={(e) => setStart(e.target.value)}
-                  className="w-full mt-1 h-10 rounded-md bg-white/6 border border-white/10 px-3
-                             outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full mt-1 h-10 rounded-md bg-white/6 border border-white/10 px-3 outline-none focus:ring-2 focus:ring-sky-400/30"
                 />
               </div>
               <div>
@@ -304,8 +350,7 @@ export default function AsteroidSearch() {
                   type="date"
                   value={end}
                   onChange={(e) => setEnd(e.target.value)}
-                  className="w-full mt-1 h-10 rounded-md bg-white/6 border border-white/10 px-3
-                             outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full mt-1 h-10 rounded-md bg-white/6 border border-white/10 px-3 outline-none focus:ring-2 focus:ring-sky-400/30"
                 />
               </div>
               <div className="flex items-end">
@@ -327,8 +372,7 @@ export default function AsteroidSearch() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Nome, ID ou classe orbital…"
-                  className="w-full mt-1 h-10 rounded-md bg-white/6 border border-white/10 px-3
-                             outline-none focus:ring-2 focus:ring-sky-400/30"
+                  className="w-full mt-1 h-10 rounded-md bg-white/6 border border-white/10 px-3 outline-none focus:ring-2 focus:ring-sky-400/30"
                 />
               </div>
               <div>
@@ -408,23 +452,13 @@ export default function AsteroidSearch() {
       <section className="container px-4 md:px-8 py-6">
         <div className="flex items-center justify-between mb-4">
           <p className="text-white/75 text-sm">
-            {filtered.length} resultado(s){loading ? " • carregando..." : ""} • página {page} /{" "}
-            {Math.max(1, Math.ceil(filtered.length / pageSize))}
+            {filtered.length} resultado(s){loading ? " • carregando..." : ""} • página {page} / {totalPages}
           </p>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="rounded-xl"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
+            <Button variant="outline" className="rounded-xl" disabled={page <= 1} onClick={goPrev}>
               Anterior
             </Button>
-            <Button
-              className="rounded-xl"
-              disabled={page >= Math.ceil(filtered.length / pageSize)}
-              onClick={() => setPage((p) => p + 1)}
-            >
+            <Button className="rounded-xl" disabled={page >= totalPages} onClick={goNext}>
               Próxima
             </Button>
           </div>
@@ -442,11 +476,8 @@ export default function AsteroidSearch() {
               {visible.map((a) => (
                 <Card
                   key={a.id}
-                  className="bg-[rgba(8,12,20,0.82)] backdrop-blur-xl border-white/10
-                             shadow-[0_0_0_1px_rgba(255,255,255,0.04)]
-                             hover:border-white/20 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_10px_40px_rgba(122,215,255,0.10)]
-                             transition-all cursor-pointer"
-                  onClick={() => setOpenItem(a)}
+                  className="bg-[rgba(8,12,20,0.82)] backdrop-blur-xl border-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] hover:border-white/20 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_10px_40px_rgba(122,215,255,0.10)] transition-all cursor-pointer"
+                  onClick={openItemHandler(a)}
                 >
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
@@ -493,7 +524,7 @@ export default function AsteroidSearch() {
                     <tr
                       key={a.id}
                       className="border-t border-white/5 hover:bg-white/5 cursor-pointer"
-                      onClick={() => setOpenItem(a)}
+                      onClick={openItemHandler(a)}
                     >
                       <td className="px-3 py-2">{a.name}</td>
                       <td className="px-3 py-2 text-white/70">{a.id}</td>
