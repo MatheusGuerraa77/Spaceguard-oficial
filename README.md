@@ -1,2 +1,170 @@
-# Spaceguard-oficial
-# SpaceGuard — Impactor-2025  > **Visualize, entenda e mitigue riscos de asteroides** usando dados da **NASA** e do **USGS**.   > O SpaceGuard transforma ciência complexa em decisões claras, com mapas interativos, simulação rápida e um modo de mitigação por **∆v** (deflexão cinética).  ![SpaceGuard hero](docs/screenshot-hero.png) <!-- TODO: adicione uma captura --> ![Mapa com zonas](docs/screenshot-map.png)   <!-- TODO: adicione uma captura -->  ---  ## ✨ Visão  - **Ver**: trajetória simples e ponto de impacto provável. - **Entender**: energia, cratera (estimativa), magnitude sísmica equivalente (**Mw**) e **zonas de dano** no mapa. - **Agir**: aplicar **∆v** e observar o **deslocamento do risco** (antes/depois).  **Públicos**: público geral, educadores e gestores de defesa civil.   **Princípios**: dados confiáveis, física transparente (com limites), UX acessível, desempenho no navegador.  ---  ## 📦 Stack  - **Front**: React + Vite + TypeScript, Tailwind + shadcn/ui, Leaflet (mapa), (opcional) Three.js (órbita/hero), Framer Motion (microinterações). - **Back**: Node.js + Express + TypeScript, Zod (validação), Axios (proxy NASA), cache em memória/arquivo. - **Tema NASA**:   - `#0B3D91` (NASA Blue), `#FC3D21` (NASA Red), `#0B1321` (Deep Space),     `#111827` (panel), `#E5E7EB` (texto), `#9CA3AF` (muted).  ---  ## 🗺️ Funcionalidades  - **Cenário**: parâmetros do asteroide (diâmetro, densidade, velocidade, ângulo), localização (clique no mapa), terreno (oceano/continente). - **Resultados**:   - **Energia (Mt TNT)**, **Cratera (km, estimativa)**, **Mw** (estimativa), **Zonas de dano** (3 anéis GeoJSON). - **Mitigação (∆v)**: ajuste de ∆v e “dias antes” → comparação **antes/depois** do ponto de impacto. - **NEO Search**: busca e *lookup* via **NASA NeoWs** (proxy + cache). - **Acessibilidade**: paleta daltônica, foco visível, teclado, `prefers-reduced-motion`. - **Fallback**: modo **demonstração** (mocks) se as APIs estiverem indisponíveis. - **(Opcional)** **Órbita/Animação 3D**: visual elíptico simples e cena “asteroide em descida” com HUD numérico.  ---  ## 🧪 Modelos e fórmulas (educacionais)  > **Aviso**: estimativas para **divulgação científica**; não substituem modelagem oficial.  - **Massa**     \[   m = \rho \cdot \frac{4}{3}\pi \left(\frac{D}{2}\right)^3   \] - **Energia cinética**     \[   E = \tfrac{1}{2} m v^2 \quad\text{e}\quad \text{Mt} = \frac{E}{4{,}184\times10^{15}}   \] - **Magnitude sísmica (equivalente)**     Fração de acoplamento sísmico \(f\) (padrão 0,02):     \[   E_s = f\cdot E,\quad \log_{10}(E_s) \approx 5{,}24 + 1{,}44 \, M_w   \Rightarrow   M_w \approx \frac{\log_{10}(E_s) - 5{,}24}{1{,}44}   \] - **Cratera (estimativa)**     Relação de *pi-scaling* simplificada (solo rochoso, 45°). O app exibe fonte e intervalo de incerteza. - **Zonas de dano (3 anéis)**     Raios proporcionais a \( \text{Mt}^{1/3} \) (heurística pedagógica). - **Mitigação (∆v)**     ∆v tangencial aplicado **X** dias antes → deslocamento aproximado do impacto (efeito demonstrativo).  Mais em **docs/formulas.md**. <!-- TODO: criar arquivo com explicações e fontes -->  ---  ## 🔗 Fontes de dados  - **NASA NeoWs (Near-Earth Object Web Service)** — parâmetros orbitais, tamanho estimado, aproximações. - **USGS**   - **Earthquake Catalog** — referência para magnitudes/eventos (contexto educativo).   - **The National Map (DEM/elevação)** — opcional: realçar suscetibilidade costeira.  > Chaves de API **nunca** ficam no front; o **backend** faz proxy e cache.  ---  ## 🧭 Arquitetura
+# 🌍 SpaceGuard — Defend Tomorrow, Understand Today
+
+## ✨ Storytelling Pitch
+
+On a quiet morning, astronomers flag a new Near-Earth Object: **“Impactor-2025.”**  
+It’s not panic — yet. But mayors, emergency managers, teachers, and curious citizens all ask the same question:  
+
+> “If this hits, what happens here?”
+
+**SpaceGuard** turns raw data into clear insight.  
+It blends **NASA’s NEO parameters** (size, speed, orbit) with **USGS environmental layers** (elevation, seismic catalogs, coastline risk) to:
+
+- Simulate meteor impacts  
+- Visualize consequences  
+- Test mitigation strategies  
+
+With an **accessible UI**, **dynamic 3D scenes**, and **intuitive maps**, SpaceGuard bridges the gap between **rigorous science** and **public understanding**.  
+It’s not just a demo; it’s a **decision-support & education tool** that helps the world prepare — *before the sky falls*.
+
+---
+
+## 🧭 What the App Does
+
+### 🚀 3D Home (Hero)
+- Orbiting Earth with a subtle asteroid field built using **Three.js** / `@react-three/fiber`.
+
+### 🌎 Scenario (Impact Simulator)
+- Input: diameter, density, velocity, angle, and location (map click).
+- Output:  
+  - **Impact energy** (Joules / Mt TNT)  
+  - **Crater size**  
+  - **Seismic magnitude (Mw)**  
+  - **Impact zones** on a Leaflet map  
+- Resilient: works with demo data if APIs are unavailable.
+
+### 🛡️ Mitigation (Deflection ∆v)
+- Apply a small ∆v days in advance.
+- Visualize the **shifted impact point** — original vs. mitigated.
+
+### ☄️ Asteroids (Design-Only UI)
+- Browse & search asteroids without needing live API.
+- Ready to integrate with NASA NeoWs in the future.
+
+### ℹ️ About
+- Context, assumptions, credits, and roadmap.
+
+---
+
+## 🧪 Science (Simplified but Faithful)
+
+- **Kinetic Energy:** calculated from mass (diameter + density) & velocity. Reported in Joules and Mt TNT.  
+- **Crater Scaling:** uses empirical educational models.  
+- **Seismic Magnitude (Mw):** impact–earthquake analogy.  
+- **Environmental Effects:** blast/thermal/wave zones via GeoJSON. Future: integrate **USGS datasets** for higher realism.
+
+> ⚖️ *Note: Models are simplified for education & rapid decision support. The architecture can ingest richer physics & data layers.*
+
+---
+
+## 🧩 Tech Stack
+
+### Frontend
+- React + TypeScript + Vite
+- Tailwind CSS + [shadcn/ui](https://ui.shadcn.com/)
+- Three.js + `@react-three/fiber` (Earth & asteroid field)
+- Leaflet (maps & impact zones)
+- Framer Motion (micro-interactions, hero transitions)
+- D3.js (HUD/radar & counters)
+- AbortController + debounce (responsive search UX)
+
+### Backend
+- Node.js + Express (`POST /simulate` — mock-friendly, API-ready)
+
+### Data Integrations
+- **NASA NeoWs** (asteroid data — when keys/quotas allow)  
+- **USGS** (elevation & seismic catalogs — enrich impact/environment modeling)
+
+---
+
+## 🗺️ App Pages — Deep Dive
+
+### 🏠 Home
+- Narrative hero (“Return to SpaceGuard”)
+- Orbiting Earth animation
+- Asteroid background
+- CTA to **Scenario** & **Mitigation**
+- Info card explaining *Impactor-2025*
+
+### 🌍 Scenario
+- **Form:** diameter (m), density (kg/m³), velocity (m/s), angle (°), lat/lon (typed or map click), terrain (ocean/land).  
+- **Map:** impact zones (GeoJSON) + selected point.  
+- **Results:** energy (J, Mt), crater (km), Mw estimate, notes.  
+- **Fallback:** demo data if APIs fail.
+
+### 🛡️ Mitigation
+- Controls for ∆v & lead time (days).
+- Map compares **original vs. mitigated points** (red vs. green) with dashed displacement line + summary.
+
+### ☄️ Asteroids
+- API-optional exploration UI.  
+- Integrates **NASA NeoWs** when key provided (`VITE_NASA_KEY`).
+
+### ℹ️ About
+- Challenge context, limitations, credits, and roadmap.
+
+---
+
+## 🚀 How to Run (Local)
+
+### Requirements
+- **Node 18+** and **npm**  
+- Install dependencies when prompted
+
+### 1️⃣ Backend (server)
+
+cd server
+npm install
+npm run dev
+
+
+2️⃣ Frontend (repo root)
+
+npm install
+npm run dev
+Open the URL shown (commonly http://localhost:5173).
+
+Optional: Environment Variables
+Create a .env file in the repo root:
+
+## 🗺️ Architecture Notes
+
+- Clear separation: **frontend (visualization)** vs **backend (simulation)**.
+- Progressive enhancement: runs with demo data, upgrades when APIs are live.
+- Extensible: ready for population exposure, tsunami models, multi-language UI.
+
+---
+
+## 📌 Accuracy & Limitations
+
+- Educational scaling laws (not full n-body/CFD/tsunami solvers).
+- API quotas/outages handled gracefully.
+- Units & assumptions documented.
+- Future work: deeper validation with **USGS datasets**.
+
+---
+
+## 🧭 Potential Applications
+
+- Public risk communication during asteroid news cycles.
+- STEM education (impact physics & risk literacy).
+- Policy tabletop exercises (deflection timing “what-ifs”).
+- Rapid planning for emergency drills & outreach.
+
+---
+
+## 📚 Repository
+
+Public code & prototype:  
+🔗 [https://github.com/MatheusGuerraa77/Spaceguard-oficial](https://github.com/MatheusGuerraa77/Spaceguard-oficial)
+
+---
+
+## 🧠 Conclusion
+
+**SpaceGuard** is a bridge between complex celestial risk and **actionable, visual knowledge**.  
+It empowers **students, scientists, and decision-makers** to experiment, simulate, and prepare —  
+because *the best time to understand an impact is before it happens*.
+
+
+
